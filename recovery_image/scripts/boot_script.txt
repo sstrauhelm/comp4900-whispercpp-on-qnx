@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+# SPDX-License-Identifier: GPL-2.0 #
+# (C) Copyright Argus Cyber Security Ltd
+#  All rights reserved
+
+#######################################################################################################################
+# Script Name   :   Boot Script
+# Description   :   This is an U-Boot boot script file.
+#                   It executes on boot by U-Boot and load an environment file
+#                   called env.txt from the MMC first partition.
+#                   This env file contains the target IP address and the server address.
+#                   It then tries to fetch a file from the server's TFTP
+#                   from a folder named by the target MAC address.
+#                   If it finds the image, it then fetch and flash it to the MMC second and third partitions.
+#                   When flashing finished or a file wasn't find, and then
+#                   loading the 'cmdline.txt' file from the second partition and continues to boot.
+# Args          :
+# Date          :   23/11/2020
+# Author        :   Itay Sperling
+# Email         :   itay.sperling@argus-sec.com
+#######################################################################################################################
+
+# load env file and assign some variables
+load mmc 0:1 $loadaddr env.txt
+env import -t $loadaddr $filesize serverip ipaddr image_name netconsole
+setenv filesize 0
+tftpboot 0x80000 ${serverip}:ifs-rpi4.bin
+go 0x80000
